@@ -1,6 +1,13 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialisation — avoids crashing at build time when env var is absent
+function getResendClient(): Resend {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY is not configured');
+  }
+  return new Resend(apiKey);
+}
 
 interface ConsultationData {
   name: string;
@@ -12,11 +19,9 @@ interface ConsultationData {
   message: string;
 }
 
-/**
- * Send notification email to internal team
- */
 export async function sendTeamNotificationEmail(data: ConsultationData) {
   try {
+    const resend = getResendClient();
     const { data: emailData, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'FixIt Studio <notifications@fixit.studio>',
       to: process.env.TEAM_EMAIL || 'team@fixit.studio',
@@ -41,10 +46,7 @@ export async function sendTeamNotificationEmail(data: ConsultationData) {
                 border-radius: 8px 8px 0 0;
                 text-align: center;
               }
-              .header h1 {
-                margin: 0;
-                font-size: 24px;
-              }
+              .header h1 { margin: 0; font-size: 24px; }
               .content {
                 background: #f9fafb;
                 padding: 30px;
@@ -67,10 +69,7 @@ export async function sendTeamNotificationEmail(data: ConsultationData) {
                 letter-spacing: 0.5px;
                 margin-bottom: 5px;
               }
-              .field-value {
-                color: #1f2937;
-                font-size: 16px;
-              }
+              .field-value { color: #1f2937; font-size: 16px; }
               .message-box {
                 background: white;
                 padding: 15px;
@@ -106,60 +105,40 @@ export async function sendTeamNotificationEmail(data: ConsultationData) {
               <p style="font-size: 16px; margin-bottom: 25px;">
                 A new consultation request has been submitted. Please review the details below:
               </p>
-
               <div class="field">
                 <div class="field-label">Client Name</div>
                 <div class="field-value">${data.name}</div>
               </div>
-
               <div class="field">
                 <div class="field-label">Email Address</div>
                 <div class="field-value">
-                  <a href="mailto:${data.email}" style="color: #667eea; text-decoration: none;">
-                    ${data.email}
-                  </a>
+                  <a href="mailto:${data.email}" style="color: #667eea; text-decoration: none;">${data.email}</a>
                 </div>
               </div>
-
               <div class="field">
                 <div class="field-label">Phone Number</div>
                 <div class="field-value">
-                  <a href="tel:${data.phone}" style="color: #667eea; text-decoration: none;">
-                    ${data.phone}
-                  </a>
+                  <a href="tel:${data.phone}" style="color: #667eea; text-decoration: none;">${data.phone}</a>
                 </div>
               </div>
-
               <div class="field">
                 <div class="field-label">Service Category</div>
                 <div class="field-value">${data.category}</div>
               </div>
-
               <div class="field">
                 <div class="field-label">Scheduled Consultation</div>
                 <div class="field-value">
-                  📅 ${new Date(data.consultation_date).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                  <br>
-                  🕐 ${data.consultation_time}
+                  📅 ${new Date(data.consultation_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  <br>🕐 ${data.consultation_time}
                 </div>
               </div>
-
               <div class="field">
                 <div class="field-label">Client Message</div>
                 <div class="message-box">${data.message.replace(/\n/g, '<br>')}</div>
               </div>
-
               <div style="text-align: center;">
-                <a href="mailto:${data.email}" class="cta-button">
-                  Reply to Client
-                </a>
+                <a href="mailto:${data.email}" class="cta-button">Reply to Client</a>
               </div>
-
               <div class="footer">
                 <p>This is an automated notification from FixIt Studio consultation system.</p>
                 <p>Please respond to the client within 3 hours as per our service commitment.</p>
@@ -195,7 +174,6 @@ Please respond to the client within 3 hours.
       console.error('Team email error:', error);
       return { success: false, error };
     }
-
     return { success: true, data: emailData };
   } catch (error) {
     console.error('Team email exception:', error);
@@ -203,11 +181,9 @@ Please respond to the client within 3 hours.
   }
 }
 
-/**
- * Send confirmation email to client
- */
 export async function sendClientConfirmationEmail(data: ConsultationData) {
   try {
+    const resend = getResendClient();
     const { data: emailData, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'FixIt Studio <hello@fixit.studio>',
       to: data.email,
@@ -232,14 +208,8 @@ export async function sendClientConfirmationEmail(data: ConsultationData) {
                 border-radius: 8px 8px 0 0;
                 text-align: center;
               }
-              .header h1 {
-                margin: 0;
-                font-size: 28px;
-              }
-              .header p {
-                margin: 10px 0 0 0;
-                opacity: 0.9;
-              }
+              .header h1 { margin: 0; font-size: 28px; }
+              .header p { margin: 10px 0 0 0; opacity: 0.9; }
               .content {
                 background: white;
                 padding: 40px;
@@ -254,9 +224,7 @@ export async function sendClientConfirmationEmail(data: ConsultationData) {
                 margin: 25px 0;
                 border-radius: 6px;
               }
-              .highlight-box strong {
-                color: #667eea;
-              }
+              .highlight-box strong { color: #667eea; }
               .footer {
                 text-align: center;
                 margin-top: 30px;
@@ -265,10 +233,7 @@ export async function sendClientConfirmationEmail(data: ConsultationData) {
                 color: #6b7280;
                 font-size: 14px;
               }
-              .checkmark {
-                font-size: 48px;
-                margin-bottom: 20px;
-              }
+              .checkmark { font-size: 48px; margin-bottom: 20px; }
             </style>
           </head>
           <body>
@@ -281,19 +246,12 @@ export async function sendClientConfirmationEmail(data: ConsultationData) {
               <p style="font-size: 16px; margin-bottom: 20px;">
                 We're excited to help bring your vision to life! Your consultation request has been successfully submitted and our team is reviewing the details.
               </p>
-
               <div class="highlight-box">
                 <strong>Scheduled Consultation:</strong><br>
-                📅 ${new Date(data.consultation_date).toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}<br>
+                📅 ${new Date(data.consultation_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
                 🕐 ${data.consultation_time}<br>
                 📂 Service: ${data.category}
               </div>
-
               <h3 style="color: #1f2937; margin-top: 30px;">What happens next?</h3>
               <ul style="color: #4b5563; line-height: 2;">
                 <li>Our team will review your project details</li>
@@ -301,17 +259,13 @@ export async function sendClientConfirmationEmail(data: ConsultationData) {
                 <li>During the call, we'll discuss your requirements in depth</li>
                 <li>You'll receive a custom proposal tailored to your needs</li>
               </ul>
-
               <p style="margin-top: 30px; padding: 20px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
                 <strong>💡 Pro Tip:</strong> Have any reference materials or examples ready for our consultation call to help us better understand your vision!
               </p>
-
               <div class="footer">
                 <p><strong>FixIt Studio</strong></p>
                 <p>Professional Media Repair, Enhancement, and Post-Production Solutions</p>
-                <p style="margin-top: 15px;">
-                  Questions? Reply to this email or call us directly.
-                </p>
+                <p style="margin-top: 15px;">Questions? Reply to this email or call us directly.</p>
               </div>
             </div>
           </body>
@@ -324,12 +278,7 @@ Your consultation request has been received successfully.
 
 Scheduled Consultation:
 ----------------------
-Date: ${new Date(data.consultation_date).toLocaleDateString('en-US', { 
-  weekday: 'long', 
-  year: 'numeric', 
-  month: 'long', 
-  day: 'numeric' 
-})}
+Date: ${new Date(data.consultation_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
 Time: ${data.consultation_time}
 Service: ${data.category}
 
@@ -354,7 +303,6 @@ Questions? Reply to this email or call us directly.
       console.error('Client email error:', error);
       return { success: false, error };
     }
-
     return { success: true, data: emailData };
   } catch (error) {
     console.error('Client email exception:', error);

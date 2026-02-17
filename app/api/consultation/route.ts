@@ -173,11 +173,12 @@ export async function POST(request: NextRequest) {
     console.log('✅ Consultation saved to database:', data[0].id);
 
     // ── Notifications (fire-and-forget — unchanged pipeline) ──────────────
-    const notificationResults = {
-      teamEmail:      { success: false, error: null as unknown },
-      clientEmail:    { success: false, error: null as unknown },
-      teamWhatsApp:   { success: false, error: null as unknown },
-      clientWhatsApp: { success: false, error: null as unknown },
+    type NotifResult = { success: boolean; error?: unknown; data?: unknown };
+    const notificationResults: Record<string, NotifResult> = {
+      teamEmail:      { success: false },
+      clientEmail:    { success: false },
+      teamWhatsApp:   { success: false },
+      clientWhatsApp: { success: false },
     };
 
     Promise.all([

@@ -15,7 +15,6 @@ export default function ShowcaseCard({
 }: ShowcaseCardProps) {
   return (
     <div className="relative">
-      {/* Hero video container */}
       <div className="group relative rounded-2xl overflow-hidden glass-card hover-glow mb-8">
         <div className="aspect-video relative bg-black/40">
           <iframe
@@ -37,7 +36,6 @@ export default function ShowcaseCard({
         </div>
       </div>
 
-      {/* Capabilities list (if provided) */}
       {capabilities.length > 0 && (
         <div className="glass-card rounded-xl p-6 md:p-8">
           <h4 className="text-lg font-semibold text-white mb-4">

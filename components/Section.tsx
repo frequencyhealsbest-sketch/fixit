@@ -15,7 +15,7 @@ interface SectionProps {
   description?: string;
   videos: VideoItem[];
   layout?: 'grid-2x3' | 'showcase';
-  capabilities?: string[]; // Used only in showcase mode
+  capabilities?: string[];
 }
 
 export default function Section({ 
@@ -60,7 +60,6 @@ export default function Section({
           </div>
         </section>
         
-        {/* Section divider */}
         <div className="section-divider max-w-5xl mx-auto"></div>
       </>
     );
@@ -95,7 +94,6 @@ export default function Section({
         </div>
       </section>
       
-      {/* Section divider */}
       <div className="section-divider max-w-5xl mx-auto"></div>
     </>
   );
